@@ -15,6 +15,11 @@ $ pip install pipenv
 
 The main flow is centralized inside the `pages/payment_flow.py` on method `def pay(self):`
 
+To execute the script, run the code below:
+```bash
+$ pipenv run python -m pytest -s
+```
+
 ```python
     def pay(self):
         # will create a transaction with custom data
