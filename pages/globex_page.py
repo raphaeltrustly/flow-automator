@@ -1,8 +1,10 @@
+from time import sleep
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from resources.globex_locators import GlobexLocators
+from selenium.webdriver.common.by import By
 
 class GlobexPage():
     URL = 'http://localhost:7000/merchant-demo/globex'
@@ -14,17 +16,31 @@ class GlobexPage():
         self.driver.get(self.URL)
 
     def fill_custom_data(self, custom_data):
-        # Seleciona o User: Custom
         custom_data_select = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(GlobexLocators.custom_data_select))
         user_select = Select(custom_data_select)
-        user_select.select_by_visible_text('Custom')
-        
-        # Preenche os dados
-        vip_input = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(GlobexLocators.vip_input))
-        vip_input.send_keys(custom_data["vipTier"])
 
-        # Clica em Set
-        WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(GlobexLocators.custom_data_button)).click()
+        # Seleciona o default do country para preencher os campos e mudar os bancos
+        match custom_data["country"]:
+            case "CA":
+                user_select.select_by_visible_text('CA - Alanis Morissette')
+            
+        # Se tiver algo além do country
+        if (len(custom_data) > 1):
+            # Seleciona o User: Custom
+            user_select.select_by_visible_text('Custom')
+            
+            # Preenche os dados
+            if (hasattr(custom_data, "name") and custom_data["name"]):
+                name_input = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(GlobexLocators.custom_customer_name))
+                name_input.clear()
+                name_input.send_keys(custom_data["name"])
+
+            if (hasattr(custom_data, "vip_tier") and custom_data["vip_tier"]):
+                vip_input = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(GlobexLocators.custom_vip_input))
+                vip_input.send_keys(custom_data["vip_tier"])
+
+            # Clica em Set
+            WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(GlobexLocators.custom_data_button)).click()
 
     def show_bank_list(self):
         # Pega o iframe dos bancos
@@ -44,7 +60,7 @@ class GlobexPage():
 
         # Digita o nome do banco
         bank_name_input = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(GlobexLocators.bank_name_input))
-        bank_name_input.send_keys(selected_bank + Keys.ENTER)
+        bank_name_input.send_keys(selected_bank["name"] + Keys.ENTER)
 
         selected_bank_div = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(GlobexLocators.selected_bank_div))
         selected_bank_div.send_keys(Keys.ENTER)
@@ -69,7 +85,9 @@ class GlobexPage():
         password_input = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(GlobexLocators.password_input))
         password_input.send_keys(bank_credentials["password"] + Keys.ENTER)
 
-        account_frame = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(GlobexLocators.account_frame))
+        self.driver.switch_to.default_content()
+
+        account_frame = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(GlobexLocators.account_iframe))
         self.driver.switch_to.frame(account_frame)
 
         submit_buttom = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(GlobexLocators.submit_buttom))

@@ -13,21 +13,16 @@ class AchSimulatorEventPage():
     def load(self, event_id):
         self.driver.get(self.URL + event_id)
 
-    def ack(self):
+    def process(self, event):
         actions_select = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(AchSimulatorEventLocators.actions_select))
         select = Select(actions_select)
-        select.select_by_visible_text('Sent')
-        submit_btn = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(AchSimulatorEventLocators.submit))
-        submit_btn.click()
-        sleep(1)
+        if (event is 'Returned'):
+            select.select_by_visible_text('Returned')
 
-    def nsf(self, return_code):
-        actions_select = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(AchSimulatorEventLocators.actions_select))
-        select = Select(actions_select)
-        select.select_by_visible_text('Returned')
-
-        return_code_input = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(AchSimulatorEventLocators.return_code_input))
-        return_code_input.send_keys(return_code)
+            return_code_input = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(AchSimulatorEventLocators.return_code_input))
+            return_code_input.send_keys('R01')
+        else:
+            select.select_by_visible_text(event)
 
         submit_btn = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(AchSimulatorEventLocators.submit))
         submit_btn.click()
